@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Gyro.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,6 +53,8 @@ TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 
+uint32_t DAC_Value = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,18 +65,24 @@ static void MX_DAC_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void update_DAC(float ox, float oy, float oz);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void update_DAC(float ox, float oy, float oz)
+{
+	DAC_Value = (oz/360)*(ox/360)*4095;
+}
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+
+
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -104,7 +112,8 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1,&DAC_Value,1,DAC_ALIGN_12B_R);
+  GyroInit();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,6 +123,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  GyroPoll();
+	  GyroConvert();
+	  update_DAC(1,1,1);
   }
   /* USER CODE END 3 */
 }
