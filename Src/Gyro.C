@@ -1,4 +1,4 @@
 #include "Gyro.h"
-int GyroInitialise(){}
+int GyroInit(){}
 int GyroPoll(){}
 int GyroConvert(){}
