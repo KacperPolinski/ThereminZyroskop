@@ -6,6 +6,8 @@
 C_SRCS += \
 ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
 ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c \
+../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c \
 ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
 ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c \
 ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c \
@@ -29,6 +31,8 @@ C_SRCS += \
 OBJS += \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.o \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.o \
+./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.o \
+./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.o \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.o \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.o \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.o \
@@ -52,6 +56,8 @@ OBJS += \
 C_DEPS += \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.d \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.d \
+./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.d \
+./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.d \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.d \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.d \
 ./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.d \
@@ -78,7 +84,7 @@ Drivers/STM32L4xx_HAL_Driver/Src/%.o: ../Drivers/STM32L4xx_HAL_Driver/Src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32L476xx -I"C:/Users/Hubert/Desktop/THR/th/Inc" -I"C:/Users/Hubert/Desktop/THR/th/Drivers/STM32L4xx_HAL_Driver/Inc" -I"C:/Users/Hubert/Desktop/THR/th/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy" -I"C:/Users/Hubert/Desktop/THR/th/Drivers/CMSIS/Device/ST/STM32L4xx/Include" -I"C:/Users/Hubert/Desktop/THR/th/Drivers/CMSIS/Include"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32L476xx -I"C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Inc" -I"C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc" -I"C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy" -I"C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Drivers/CMSIS/Device/ST/STM32L4xx/Include" -I"C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Drivers/CMSIS/Include"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

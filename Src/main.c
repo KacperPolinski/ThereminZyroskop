@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "gyro.h"
+#include "accl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,34 +43,28 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+DAC_HandleTypeDef hdac1;
+
 SAI_HandleTypeDef hsai_BlockA1;
-SAI_HandleTypeDef hsai_BlockB1;
 
 SPI_HandleTypeDef hspi2;
 
 /* USER CODE BEGIN PV */
-uint8_t comm;
-uint8_t resp;
-uint8_t adr_ctrl1 = 0x20;
-uint8_t adr_ctrl2 = 0x21;
-uint8_t adr_ctrl3 = 0x22;
-uint8_t adr_ctrl4 = 0x23;
-uint8_t adr_ctrl5 = 0x24;
-uint8_t adr_status = 0x27;
-uint8_t adr_XL = 0x28;
-uint8_t adr_XH = 0x29;
-uint8_t adr_YL = 0x2A;
-uint8_t adr_YH = 0x2B;
-uint8_t adr_ZL = 0x2C;
-uint8_t adr_ZH = 0x2D;
-uint8_t adr_whoiam = 0x0f;
-uint8_t data;
-uint8_t axis[6];
-int16_t out[3];
-uint8_t adr_int1ths = 0x32;
-uint8_t adr_int1dur = 0x38;
-uint8_t adr_int1cfg = 0x30;
+int16_t gyro_read[3] = {0,0,0};
+int32_t gyro_sum[3] = {0,0,0};
+int32_t gyro_pos[3] = {0,0,0};
+int16_t gyro_avg[3] = {0,0,0};
 
+int16_t accl_read[3] = {0,0,0};
+int32_t accl_sum[3] = {0,0,0};
+int32_t accl_pos[3] = {0,0,0};
+int16_t accl_avg[3] = {0,0,0};
+
+int32_t avg_cnt=0;
+int g,a,m;
+gyro os_g;
+accl os_a;
+mag  os_m;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,6 +72,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SAI1_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -117,79 +113,80 @@ int main(void)
   MX_GPIO_Init();
   MX_SAI1_Init();
   MX_SPI2_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
   HAL_SPI_Init(&hspi2);
-  HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,1);
-  HAL_GPIO_WritePin(GYRO_INT1_GPIO_Port,GYRO_INT1_Pin,0);
-  HAL_GPIO_WritePin(GYRO_INT2_GPIO_Port,GYRO_INT2_Pin,0);
-  comm=0b10001111;
+  g=Gyro_Init(2);
+ // HAL_Delay(40);
+  a=accl_Init(0);
+ // HAL_Delay(40);
+  //m=mag_Init();
+  //HAL_Delay(40);
 
-  HAL_Delay(200);
-
-  ///REG1
-  resp=0x00;
-  data=0x0F;
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-  HAL_SPI_Transmit(&hspi2, &adr_ctrl1, 1, 50);
-  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
-
-
-  ///REG4
-
-  data=0x80;
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-  HAL_SPI_Transmit(&hspi2, &adr_ctrl4, 1, 50);
-  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
-
-
-
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-  comm = adr_whoiam | 0x80;  // MSB bit = 1 to read
-  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-  HAL_SPI_Receive(&hspi2, &resp, 1, 50);
-  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
-
+  avg_cnt=0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  comm = adr_status | 0x80;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &resp, 1, 50);
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
+	  if(avg_cnt<100){
+		//  if(g)
+		  Gyro_Read(&os_g);
+		 // HAL_Delay(40);
+		//  if(a)
+		  accl_Read(&os_a);
+		 // HAL_Delay(40);
+		//  if(m)
+		 // mag_Read(&os_m);
+		  //HAL_Delay(40);
 
-	  if((resp && 0b00001000)){
-		  if(resp && 0b10000000){
+		  gyro_sum[0]+=os_g.X;
+		  gyro_sum[1]+=os_g.Y;
+		  gyro_sum[2]+=os_g.Z;
 
-			  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-			  comm = adr_XL | 0xb11000000;  // MSB bit = 1 to read, 1 = increment adress
-			  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-			  HAL_SPI_Receive(&hspi2, axis, 6, 50);
-			  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
+		  accl_sum[0]+=os_a.X;
+		  accl_sum[1]+=os_a.Y;
+		  accl_sum[2]+=os_a.Z;
 
-			  out[0]=(axis[1]<<8)+axis[0];
-			  out[1]=(axis[3]<<8)+axis[2];
-			  out[2]=(axis[5]<<8)+axis[4];
+		  ++avg_cnt;
+		  gyro_avg[0]=gyro_sum[0]/avg_cnt;
+		  gyro_avg[1]=gyro_sum[1]/avg_cnt;
+		  gyro_avg[2]=gyro_sum[2]/avg_cnt;
+
+		  accl_avg[0]=accl_sum[0]/avg_cnt;
+		  accl_avg[1]=accl_sum[1]/avg_cnt;
+		  accl_avg[2]=accl_sum[2]/avg_cnt;
+
+	  }else{
+		//  if(g)
+		  Gyro_Read(&os_g);
+		//  HAL_Delay(40);
+		//  if(a)
+		  accl_Read(&os_a);
+		//  HAL_Delay(40);
+		//  if(m)
+		 // mag_Read(&os_m);
+		 // HAL_Delay(40);
 
 
+		  gyro_read[0]=os_g.X-gyro_avg[0];
+		  gyro_read[1]=os_g.Y-gyro_avg[1];
+		  gyro_read[2]=os_g.Z-gyro_avg[2];
+		  gyro_pos[0]+=gyro_read[0];
+		  gyro_pos[1]+=gyro_read[1];
+		  gyro_pos[2]+=gyro_read[2];
+
+		  accl_read[0]=os_g.X-accl_avg[0];
+		  accl_read[1]=os_g.Y-accl_avg[1];
+		  accl_read[2]=os_g.Z-accl_avg[2];
+		  accl_pos[0]+=accl_read[0];
+		  accl_pos[1]+=accl_read[1];
+		  accl_pos[2]+=accl_read[2];
 
 
-
-
-
-
-
-
-
-		  }
-		  HAL_Delay(100);
 	  }
-	  HAL_Delay(100);
+
 
     /* USER CODE END WHILE */
 
@@ -217,7 +214,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 20;
+  RCC_OscInitStruct.PLL.PLLN = 40;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -230,11 +227,11 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -242,7 +239,7 @@ void SystemClock_Config(void)
   PeriphClkInit.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
   PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
-  PeriphClkInit.PLLSAI1.PLLSAI1N = 24;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 16;
   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
   PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
@@ -257,6 +254,47 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief DAC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_DAC1_Init(void)
+{
+
+  /* USER CODE BEGIN DAC1_Init 0 */
+
+  /* USER CODE END DAC1_Init 0 */
+
+  DAC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN DAC1_Init 1 */
+
+  /* USER CODE END DAC1_Init 1 */
+  /** DAC Initialization 
+  */
+  hdac1.Instance = DAC1;
+  if (HAL_DAC_Init(&hdac1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** DAC channel OUT1 config 
+  */
+  sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_ENABLE;
+  sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
+  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN DAC1_Init 2 */
+
+  /* USER CODE END DAC1_Init 2 */
+
 }
 
 /**
@@ -302,32 +340,6 @@ static void MX_SAI1_Init(void)
   {
     Error_Handler();
   }
-  hsai_BlockB1.Instance = SAI1_Block_B;
-  hsai_BlockB1.Init.Protocol = SAI_FREE_PROTOCOL;
-  hsai_BlockB1.Init.AudioMode = SAI_MODESLAVE_RX;
-  hsai_BlockB1.Init.DataSize = SAI_DATASIZE_8;
-  hsai_BlockB1.Init.FirstBit = SAI_FIRSTBIT_MSB;
-  hsai_BlockB1.Init.ClockStrobing = SAI_CLOCKSTROBING_FALLINGEDGE;
-  hsai_BlockB1.Init.Synchro = SAI_SYNCHRONOUS;
-  hsai_BlockB1.Init.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
-  hsai_BlockB1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
-  hsai_BlockB1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
-  hsai_BlockB1.Init.MonoStereoMode = SAI_STEREOMODE;
-  hsai_BlockB1.Init.CompandingMode = SAI_NOCOMPANDING;
-  hsai_BlockB1.Init.TriState = SAI_OUTPUT_NOTRELEASED;
-  hsai_BlockB1.FrameInit.FrameLength = 24;
-  hsai_BlockB1.FrameInit.ActiveFrameLength = 1;
-  hsai_BlockB1.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
-  hsai_BlockB1.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
-  hsai_BlockB1.FrameInit.FSOffset = SAI_FS_FIRSTBIT;
-  hsai_BlockB1.SlotInit.FirstBitOffset = 0;
-  hsai_BlockB1.SlotInit.SlotSize = SAI_SLOTSIZE_DATASIZE;
-  hsai_BlockB1.SlotInit.SlotNumber = 1;
-  hsai_BlockB1.SlotInit.SlotActive = 0x00000000;
-  if (HAL_SAI_Init(&hsai_BlockB1) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN SAI1_Init 2 */
 
   /* USER CODE END SAI1_Init 2 */
@@ -352,12 +364,12 @@ static void MX_SPI2_Init(void)
   /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.Direction = SPI_DIRECTION_1LINE;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -387,23 +399,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, AUDIO_RST_Pin|LD_G_Pin|XL_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, AUDIO_RST_Pin|XL_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD_R_Pin|M3V3_REG_ON_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OTG_FS_VBUS_GPIO_Port, OTG_FS_VBUS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GYRO_CS_GPIO_Port, GYRO_CS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(M3V3_REG_ON_GPIO_Port, M3V3_REG_ON_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : AUDIO_RST_Pin */
   GPIO_InitStruct.Pin = AUDIO_RST_Pin;
@@ -412,50 +421,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(AUDIO_RST_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MFX_IRQ_OUT_Pin OTG_FS_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = MFX_IRQ_OUT_Pin|OTG_FS_OverCurrent_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : MAG_INT_Pin MAG_DRDY_Pin */
-  GPIO_InitStruct.Pin = MAG_INT_Pin|MAG_DRDY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MFX_WAKEUP_Pin */
-  GPIO_InitStruct.Pin = MFX_WAKEUP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MFX_WAKEUP_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD_R_Pin */
-  GPIO_InitStruct.Pin = LD_R_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(LD_R_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD_G_Pin */
-  GPIO_InitStruct.Pin = LD_G_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(LD_G_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : OTG_FS_PowerSwitchOn_Pin OTG_FS_VBUS_Pin */
-  GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin|OTG_FS_VBUS_Pin;
+  /*Configure GPIO pin : MAG_CS_Pin */
+  GPIO_InitStruct.Pin = MAG_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : EXT_RST_Pin GYRO_INT1_Pin */
-  GPIO_InitStruct.Pin = EXT_RST_Pin|GYRO_INT1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(MAG_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GYRO_CS_Pin */
   GPIO_InitStruct.Pin = GYRO_CS_Pin;
@@ -471,24 +442,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(M3V3_REG_ON_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : GYRO_INT2_Pin */
-  GPIO_InitStruct.Pin = GYRO_INT2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GYRO_INT2_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pin : XL_CS_Pin */
   GPIO_InitStruct.Pin = XL_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(XL_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : XL_INT_Pin */
-  GPIO_InitStruct.Pin = XL_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(XL_INT_GPIO_Port, &GPIO_InitStruct);
 
 }
 
