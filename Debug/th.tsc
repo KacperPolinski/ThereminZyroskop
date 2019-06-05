@@ -1,5 +1,5 @@
 #STM Touch Studio user settings - do not edit
-#Wed Jun 05 09:19:44 CEST 2019
+#Wed Jun 05 10:22:21 CEST 2019
 ExprVariable.Col0ModelIdx=0
 ExprVariable.Col0Width=15
 ExprVariable.Col1ModelIdx=1
@@ -11,7 +11,7 @@ ExprVariable.Col3Width=91
 ExprVariable.Col4ModelIdx=4
 ExprVariable.Col4Width=40
 ExprVariable.Number=0
-GdbVar.ExecDate=1559719092173
+GdbVar.ExecDate=1559722812079
 GdbVar.LastExecRelative=th.elf
 GdbVar.Version=1
 GeneralPurpose.HorizontalSplit=350
@@ -98,12 +98,14 @@ VarViewer1.Name=VarViewer1
 VarViewer1.Range.Low=0.0
 VarViewer1.Range.Up=16.0
 VarViewer1.SecondScreen=false
-VarViewer1.Var.Nb=13
+VarViewer1.Var.Nb=15
 VarViewer1.Var0.Name=accl_read[2]
 VarViewer1.Var1.Name=accl_read[1]
 VarViewer1.Var10.Name=accl_pos[2]
 VarViewer1.Var11.Name=accl_pos[1]
 VarViewer1.Var12.Name=accl_pos[0]
+VarViewer1.Var13.Name=os_a.Y
+VarViewer1.Var14.Name=accl_avg[1]
 VarViewer1.Var2.Name=gyro_read[0]
 VarViewer1.Var3.Name=gyro_read[1]
 VarViewer1.Var4.Name=gyro_read[2]

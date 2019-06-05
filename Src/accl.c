@@ -62,7 +62,6 @@ int mag_Init(){
 	  return resp;
 }
 int mag_Read(mag* data){
-	  float tmp, sens;
 	  uint8_t axis[6];
 	  uint8_t comm;
 	  int16_t out[3];
@@ -75,13 +74,9 @@ int mag_Read(mag* data){
 	  out[0]=(axis[1]<<8)+axis[0];
 	  out[1]=(axis[3]<<8)+axis[2];
 	  out[2]=(axis[5]<<8)+axis[4];
-	  sens = 0.016; //0.001 * 16 gauss
-	  tmp = (float)out[0] * sens;
-	  data->X = (int16_t)tmp;
-	  tmp = (float)out[1] * sens;
-	  data->Y = (int16_t)tmp;
-	  tmp = (float)out[2] * sens;
-	  data->Z = (int16_t)tmp;
+	  data->X = out[0];
+	  data->Y = out[1];
+	  data->Z = out[2];
 
 	  return 0;
 }
@@ -99,21 +94,27 @@ int accl_Init(accl_Scale s){
 
 
 	  ///REG1
-	  	  data=0b11100111;
+	  	  data=0b01100111;
 	  	  adr=ACCL_REG_CTRL_REG1;
 	  	  ACCL_CS_LOW;
 	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
 	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
 	  	  ACCL_CS_HIGH;
-
+	///REG2
+		  data=0b01100100;
+		  adr=ACCL_REG_CTRL_REG2;
+		  ACCL_CS_LOW;
+		  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
+		  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
+		  ACCL_CS_HIGH;
 
 	  ///REG4
 	  	  	    if(s==Scale_2g){
-	  	  	    	data=0b00000011;
+	  	  	    	data=0b11000011;
 	  	  }else if(s==Scale_4g){
-	  		  		data=0b00100011;
+	  		  		data=0b11100011;
 	  	  }else if(s==Scale_8g){
-	  		  	  	data=0b00110011;
+	  		  	  	data=0b11110011;
 	  	  }
 	  	  adr=ACCL_REG_CTRL_REG4;
 	  	  ACCL_CS_LOW;
@@ -165,11 +166,11 @@ int accl_Read(accl* data){
 	  out[2]=(axis[5]<<8)+axis[4];
 
 	  	  	  if(ACCL_SENSITIVITY == Scale_2g){
-	  	  		  sens = ACCL_SENSITIVITY_2g * 0.001;
+	  	  		  sens = ACCL_SENSITIVITY_2g ;
 	  }else   if(ACCL_SENSITIVITY == Scale_4g){
-		  	  	  sens = ACCL_SENSITIVITY_4g * 0.001;
+		  	  	  sens = ACCL_SENSITIVITY_4g ;
 	  }else   if(ACCL_SENSITIVITY == Scale_8g){
-		  	  	  sens = ACCL_SENSITIVITY_8g * 0.001;
+		  	  	  sens = ACCL_SENSITIVITY_8g ;
 	  }
 
 	  tmp = (float)out[0] * sens;

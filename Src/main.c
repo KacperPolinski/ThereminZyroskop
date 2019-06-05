@@ -117,11 +117,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_SPI_Init(&hspi2);
   g=Gyro_Init(2);
- // HAL_Delay(40);
-  a=accl_Init(0);
- // HAL_Delay(40);
+  a=accl_Init(2);
   //m=mag_Init();
-  //HAL_Delay(40);
 
   avg_cnt=0;
   /* USER CODE END 2 */
@@ -131,15 +128,9 @@ int main(void)
   while (1)
   {
 	  if(avg_cnt<100){
-		//  if(g)
 		  Gyro_Read(&os_g);
-		 // HAL_Delay(40);
-		//  if(a)
 		  accl_Read(&os_a);
-		 // HAL_Delay(40);
-		//  if(m)
 		 // mag_Read(&os_m);
-		  //HAL_Delay(40);
 
 		  gyro_sum[0]+=os_g.X;
 		  gyro_sum[1]+=os_g.Y;
@@ -159,15 +150,9 @@ int main(void)
 		  accl_avg[2]=accl_sum[2]/avg_cnt;
 
 	  }else{
-		//  if(g)
 		  Gyro_Read(&os_g);
-		//  HAL_Delay(40);
-		//  if(a)
 		  accl_Read(&os_a);
-		//  HAL_Delay(40);
-		//  if(m)
 		 // mag_Read(&os_m);
-		 // HAL_Delay(40);
 
 
 		  gyro_read[0]=os_g.X-gyro_avg[0];
@@ -177,9 +162,9 @@ int main(void)
 		  gyro_pos[1]+=gyro_read[1];
 		  gyro_pos[2]+=gyro_read[2];
 
-		  accl_read[0]=os_g.X-accl_avg[0];
-		  accl_read[1]=os_g.Y-accl_avg[1];
-		  accl_read[2]=os_g.Z-accl_avg[2];
+		  accl_read[0]=os_a.X-accl_avg[0];
+		  accl_read[1]=os_a.Y-accl_avg[1];
+		  accl_read[2]=os_a.Z-accl_avg[2];
 		  accl_pos[0]+=accl_read[0];
 		  accl_pos[1]+=accl_read[1];
 		  accl_pos[2]+=accl_read[2];
@@ -214,7 +199,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 40;
+  RCC_OscInitStruct.PLL.PLLN = 20;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -228,10 +213,10 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -369,7 +354,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
