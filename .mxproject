@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Inc
+HeaderPath=C:/Users/Kacper/Desktop/Projekt SR/ThereminZyroskop/Inc
 HeaderFiles=usb_host.h;usbh_conf.h;usbh_platform.h;stm32l4xx_it.h;stm32l4xx_hal_conf.h;main.h;
-SourcePath=C:/Users/Hubert/Desktop/Projekt SR/ThereminZyroskop/Src
+SourcePath=C:/Users/Kacper/Desktop/Projekt SR/ThereminZyroskop/Src
 SourceFiles=usb_host.c;usbh_conf.c;usbh_platform.c;stm32l4xx_it.c;stm32l4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

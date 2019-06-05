@@ -4,26 +4,16 @@
  *  Created on: 05.06.2019
  *      Author: Hubert
  */
-#include "main.h"
 
 #ifndef ACCL_H_
 #define ACCL_H_
-
-#ifndef ACCL_CS_PIN
-#define ACCL_CS_PORT				XL_CS_GPIO_Port
-#define ACCL_CS_PIN					XL_CS_Pin
-#endif
-
-#ifndef MAG_CS_PIN
-#define MAG_CS_PORT					MAG_CS_GPIO_Port
-#define MAG_CS_PIN					MAG_CS_Pin
-#endif
+#include "main.h"
 
 /* Pin macros */
-#define ACCL_CS_LOW					HAL_GPIO_WritePin(ACCL_CS_PORT,ACCL_CS_PIN,0)
-#define ACCL_CS_HIGH				HAL_GPIO_WritePin(ACCL_CS_PORT,ACCL_CS_PIN,1)
-#define MAG_CS_LOW					HAL_GPIO_WritePin(MAG_CS_PORT,MAG_CS_PIN,0)
-#define MAG_CS_HIGH					HAL_GPIO_WritePin(MAG_CS_PORT,MAG_CS_PIN,1)
+#define ACCL_CS_LOW					HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,0)
+#define ACCL_CS_HIGH				HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,1)
+#define MAG_CS_LOW					HAL_GPIO_WritePin(MAG_CS_GPIO_Port,MAG_CS_Pin,0)
+#define MAG_CS_HIGH					HAL_GPIO_WritePin(MAG_CS_GPIO_Port,MAG_CS_Pin,1)
 
 /* Identification number */
 #define ACCL_WHO_AM_I			0b01000001

@@ -65,11 +65,11 @@ int mag_Read(mag* data){
 	  uint8_t axis[6];
 	  uint8_t comm;
 	  int16_t out[3];
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
+	  HAL_GPIO_WritePin(MAG_CS_GPIO_Port,MAG_CS_Pin,0);
 	  comm = ACCL_REG_OUT_X_L | 0b11000000;  // MSB bit = 1 to read, 1 = increment adress
 	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
 	  HAL_SPI_Receive(&hspi2, axis, 6, 50);
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
+	  HAL_GPIO_WritePin(MAG_CS_GPIO_Port,MAG_CS_Pin,1);
 
 	  out[0]=(axis[1]<<8)+axis[0];
 	  out[1]=(axis[3]<<8)+axis[2];
@@ -94,7 +94,7 @@ int accl_Init(accl_Scale s){
 
 
 	  ///REG1
-	  	  data=0b01100111;
+	  	  data=0b01101111;
 	  	  adr=ACCL_REG_CTRL_REG1;
 	  	  ACCL_CS_LOW;
 	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
@@ -110,11 +110,11 @@ int accl_Init(accl_Scale s){
 
 	  ///REG4
 	  	  	    if(s==Scale_2g){
-	  	  	    	data=0b11000011;
+	  	  	    	data=0b11000111;
 	  	  }else if(s==Scale_4g){
-	  		  		data=0b11100011;
+	  		  		data=0b11100111;
 	  	  }else if(s==Scale_8g){
-	  		  	  	data=0b11110011;
+	  		  	  	data=0b11110111;
 	  	  }
 	  	  adr=ACCL_REG_CTRL_REG4;
 	  	  ACCL_CS_LOW;
@@ -124,46 +124,57 @@ int accl_Init(accl_Scale s){
 
 
 	  ACCL_CS_LOW;
+	  resp=0;
 	  comm = ACCL_REG_WHO_AM_I | 0x80;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &resp, 1, 50);
+	  HAL_SPI_Transmit(&hspi2, &comm, 1, 500);
+	  while(HAL_SPI_Receive(&hspi2, &resp, 1, 500)!=HAL_OK);
 	  ACCL_CS_HIGH;
 
 	  //if(resp==ACCL_WHO_AM_I)
 		//  return 0;
 	  return resp;
 }
+
+uint8_t axis[6];
 int accl_Read(accl* data){
 	  float tmp, sens;
-	  uint8_t axis[6];
 	  uint8_t comm;
 	  int16_t out[3];
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
+
+	  ACCL_CS_LOW;
+	  HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,0);
 	  comm = ACCL_REG_OUT_X_L | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[0], 1, 50);
-	  comm = ACCL_REG_OUT_X_H | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[1], 1, 50);
+	  HAL_SPI_Transmit(&hspi2, &comm, 1, 500);
+	  while(HAL_SPI_Receive(&hspi2, axis, 6, 500)!=HAL_OK);
+	  ACCL_CS_HIGH;
 
-	  comm = ACCL_REG_OUT_Y_L | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[2], 1, 50);
-	  comm = ACCL_REG_OUT_Y_H | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[3], 1, 50);
 
-	  comm = ACCL_REG_OUT_Z_L | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[4], 1, 50);
-	  comm = ACCL_REG_OUT_Z_H | 0b10000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &axis[5], 1, 50);
-	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
+//	  HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,0);
+//	  comm = ACCL_REG_OUT_X_L | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[0], 1, 50);
+//	  comm = ACCL_REG_OUT_X_H | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[1], 1, 50);
+//
+//	  comm = ACCL_REG_OUT_Y_L | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[2], 1, 50);
+//	  comm = ACCL_REG_OUT_Y_H | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[3], 1, 50);
+//
+//	  comm = ACCL_REG_OUT_Z_L | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[4], 1, 50);
+//	  comm = ACCL_REG_OUT_Z_H | 0b10000000;  // MSB bit = 1 to read
+//	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
+//	  HAL_SPI_Receive(&hspi2, &axis[5], 1, 50);
+//	  HAL_GPIO_WritePin(XL_CS_GPIO_Port,XL_CS_Pin,1);
 
-	  out[0]=(axis[1]<<8)+axis[0];
-	  out[1]=(axis[3]<<8)+axis[2];
-	  out[2]=(axis[5]<<8)+axis[4];
+	  out[0]=(axis[1]<<8)|axis[0];
+	  out[1]=(axis[3]<<8)|axis[2];
+	  out[2]=(axis[5]<<8)|axis[4];
 
 	  	  	  if(ACCL_SENSITIVITY == Scale_2g){
 	  	  		  sens = ACCL_SENSITIVITY_2g ;

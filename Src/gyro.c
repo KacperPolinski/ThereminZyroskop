@@ -22,8 +22,8 @@ int Gyro_Init(gyro_Scale s){
 	  	  data=0xFF;
 	  	  adr=GYRO_REG_CTRL_REG1;
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
-	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
+	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 500);
+	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 500);
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
 
@@ -37,8 +37,8 @@ int Gyro_Init(gyro_Scale s){
 	  	  }
 	  	  adr=GYRO_REG_CTRL_REG4;
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
-	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
+	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 500);
+	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 500);
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
 	  //HI-PASS filter
@@ -46,22 +46,23 @@ int Gyro_Init(gyro_Scale s){
 	  	  data=0x01;
 	  	  adr=GYRO_REG_CTRL_REG2;
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
-	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
+	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 500);
+	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 500);
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 	  	  ///REG5
 	  	  data=0x10;
 	  	  adr=GYRO_REG_CTRL_REG5;
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 50);
-	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 50);
+	  	  HAL_SPI_Transmit(&hspi2, &adr, 1, 500);
+	  	  HAL_SPI_Transmit(&hspi2, &data, 1, 500);
 	  	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
 
 	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
-	  comm = GYRO_REG_WHO_AM_I | 0b11000000;  // MSB bit = 1 to read
-	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, &resp, 1, 50);
+	  resp=0;
+	  comm = GYRO_REG_WHO_AM_I | 0b10000000;  // MSB bit = 1 to read
+	  HAL_SPI_Transmit(&hspi2, &comm, 1, 500);
+	  while(HAL_SPI_Receive(&hspi2, &resp, 1, 500)!=HAL_OK);
 	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
 	  //if(resp==GYRO_WHO_AM_I)
@@ -76,7 +77,7 @@ int Gyro_Read(gyro* data){
 	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,0);
 	  comm = GYRO_REG_OUT_X_L | 0b11000000;  // MSB bit = 1 to read, 1 = increment adress
 	  HAL_SPI_Transmit(&hspi2, &comm, 1, 50);
-	  HAL_SPI_Receive(&hspi2, axis, 6, 50);
+	  while(HAL_SPI_Receive(&hspi2, axis, 6, 50)!=HAL_OK);
 	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
 	  out[0]=(axis[1]<<8)+axis[0];

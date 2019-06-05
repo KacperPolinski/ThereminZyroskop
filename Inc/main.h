@@ -70,6 +70,8 @@ void Error_Handler(void);
 #define SAI1_SD_GPIO_Port GPIOE
 #define MAG_CS_Pin GPIO_PIN_0
 #define MAG_CS_GPIO_Port GPIOC
+#define QSPI_CS_Pin GPIO_PIN_11
+#define QSPI_CS_GPIO_Port GPIOE
 #define MEMS_SCK_Pin GPIO_PIN_1
 #define MEMS_SCK_GPIO_Port GPIOD
 #define MEMS_MOSI_Pin GPIO_PIN_4

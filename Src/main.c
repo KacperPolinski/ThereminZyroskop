@@ -116,7 +116,9 @@ int main(void)
   MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
   HAL_SPI_Init(&hspi2);
+  HAL_GPIO_WritePin(QSPI_CS_GPIO_Port,QSPI_CS_Pin,1);
   g=Gyro_Init(2);
+  HAL_Delay(100);
   a=accl_Init(2);
   //m=mag_Init();
 
@@ -128,6 +130,7 @@ int main(void)
   while (1)
   {
 	  if(avg_cnt<100){
+		  HAL_Delay(10);
 		  Gyro_Read(&os_g);
 		  accl_Read(&os_a);
 		 // mag_Read(&os_m);
@@ -150,6 +153,7 @@ int main(void)
 		  accl_avg[2]=accl_sum[2]/avg_cnt;
 
 	  }else{
+		  HAL_Delay(10);
 		  Gyro_Read(&os_g);
 		  accl_Read(&os_a);
 		 // mag_Read(&os_m);
@@ -351,8 +355,8 @@ static void MX_SPI2_Init(void)
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_1LINE;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -360,7 +364,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 7;
   hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
   {
     Error_Handler();
@@ -388,7 +392,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, AUDIO_RST_Pin|XL_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, AUDIO_RST_Pin|QSPI_CS_Pin|XL_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(MAG_CS_GPIO_Port, MAG_CS_Pin, GPIO_PIN_RESET);
@@ -413,6 +417,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(MAG_CS_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : QSPI_CS_Pin XL_CS_Pin */
+  GPIO_InitStruct.Pin = QSPI_CS_Pin|XL_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
   /*Configure GPIO pin : GYRO_CS_Pin */
   GPIO_InitStruct.Pin = GYRO_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -426,13 +437,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(M3V3_REG_ON_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : XL_CS_Pin */
-  GPIO_InitStruct.Pin = XL_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(XL_CS_GPIO_Port, &GPIO_InitStruct);
 
 }
 
