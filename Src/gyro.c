@@ -79,9 +79,9 @@ int Gyro_Read(gyro* data){
 	  HAL_SPI_Receive(&hspi2, axis, 6, 50);
 	  HAL_GPIO_WritePin(GYRO_CS_GPIO_Port,GYRO_CS_Pin,1);
 
-	  out[0]=(axis[1]<<8)+axis[0];
-	  out[1]=(axis[3]<<8)+axis[2];
-	  out[2]=(axis[5]<<8)+axis[4];
+	  out[0]=(uint16_t)(axis[1]<<8)+(uint16_t)axis[0];
+	  out[1]=(uint16_t)(axis[3]<<8)+(uint16_t)axis[2];
+	  out[2]=(uint16_t)(axis[5]<<8)+(uint16_t)axis[4];
 
 	  	  	  if(GYRO_SENSITIVITY == Scale_250){
 	  	  		  sens = GYRO_SENSITIVITY_250 * 0.001;

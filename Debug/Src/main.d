@@ -33,6 +33,8 @@ Src/main.o: ../Src/main.c \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_sai.h \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
+ C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h \
+ C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Inc/gyro.h \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Inc/main.h \
  C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Inc/accl.h
@@ -104,6 +106,10 @@ C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Drive
 C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h:
 
 C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
+
+C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h:
+
+C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h:
 
 C:/Users/Hubert/Desktop/Projekt\ SR/ThereminZyroskop/Inc/gyro.h:
 

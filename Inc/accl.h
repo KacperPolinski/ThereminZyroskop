@@ -73,9 +73,9 @@ typedef enum {
 } accl_Scale;
 
 #define ACCL_SENSITIVITY		Scale_8g
-#define ACCL_SENSITIVITY_2g		2
-#define ACCL_SENSITIVITY_4g		4
-#define ACCL_SENSITIVITY_8g		8
+#define ACCL_SENSITIVITY_2g		0.061
+#define ACCL_SENSITIVITY_4g		0.122
+#define ACCL_SENSITIVITY_8g		0.244
 
 int accl_Init(accl_Scale s);
 int mag_Init();

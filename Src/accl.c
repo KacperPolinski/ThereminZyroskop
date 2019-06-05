@@ -166,11 +166,11 @@ int accl_Read(accl* data){
 	  out[2]=(axis[5]<<8)+axis[4];
 
 	  	  	  if(ACCL_SENSITIVITY == Scale_2g){
-	  	  		  sens = ACCL_SENSITIVITY_2g ;
+	  	  		  sens = ACCL_SENSITIVITY_2g * 0.001;
 	  }else   if(ACCL_SENSITIVITY == Scale_4g){
-		  	  	  sens = ACCL_SENSITIVITY_4g ;
+		  	  	  sens = ACCL_SENSITIVITY_4g * 0.001;
 	  }else   if(ACCL_SENSITIVITY == Scale_8g){
-		  	  	  sens = ACCL_SENSITIVITY_8g ;
+		  	  	  sens = ACCL_SENSITIVITY_8g * 0.001;
 	  }
 
 	  tmp = (float)out[0] * sens;

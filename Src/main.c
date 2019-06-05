@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "gyro.h"
 #include "accl.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +50,8 @@ SAI_HandleTypeDef hsai_BlockA1;
 
 SPI_HandleTypeDef hspi2;
 
+TIM_HandleTypeDef htim1;
+
 /* USER CODE BEGIN PV */
 int16_t gyro_read[3] = {0,0,0};
 int32_t gyro_sum[3] = {0,0,0};
@@ -61,6 +64,15 @@ int32_t accl_pos[3] = {0,0,0};
 int16_t accl_avg[3] = {0,0,0};
 
 int32_t avg_cnt=0;
+
+double accelX,accelY,accelZ,temperature,gyroX,gyroY,gyroZ,gyro_x_cal,gyro_y_cal,gyro_z_cal;
+uint32_t timer;
+double roll, pitch ,yaw, dt;
+float rollangle,pitchangle;
+int cal_int;
+
+
+
 int g,a,m;
 gyro os_g;
 accl os_a;
@@ -73,6 +85,7 @@ static void MX_GPIO_Init(void);
 static void MX_SAI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_DAC1_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -114,65 +127,101 @@ int main(void)
   MX_SAI1_Init();
   MX_SPI2_Init();
   MX_DAC1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim1);
   HAL_SPI_Init(&hspi2);
-  g=Gyro_Init(2);
+  g=Gyro_Init(1);
   a=accl_Init(2);
   //m=mag_Init();
 
   avg_cnt=0;
+
+  //Kalibracja ¿yroskopu
+  for(cal_int=1;cal_int<=2000;++cal_int)
+  {
+	 Gyro_Read(&os_g);
+     gyro_x_cal += os_g.X;
+     gyro_y_cal += os_g.Y;
+     gyro_z_cal += os_g.Z;
+  }
+  gyro_x_cal /= 2000;
+  gyro_y_cal /= 2000;
+  gyro_z_cal /= 2000;
+  TIM1->CNT=0;
+  roll = 0;
+  pitch = 0;
+  yaw = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(avg_cnt<100){
-		  Gyro_Read(&os_g);
-		  accl_Read(&os_a);
-		 // mag_Read(&os_m);
+//	  if(avg_cnt<100){
+//		  Gyro_Read(&os_g);
+//		  accl_Read(&os_a);
+//		 // mag_Read(&os_m);
+//
+//		  gyro_sum[0]+=os_g.X;
+//		  gyro_sum[1]+=os_g.Y;
+//		  gyro_sum[2]+=os_g.Z;
+//
+//		  accl_sum[0]+=os_a.X;
+//		  accl_sum[1]+=os_a.Y;
+//		  accl_sum[2]+=os_a.Z;
+//
+//		  ++avg_cnt;
+//		  gyro_avg[0]=gyro_sum[0]/avg_cnt;
+//		  gyro_avg[1]=gyro_sum[1]/avg_cnt;
+//		  gyro_avg[2]=gyro_sum[2]/avg_cnt;
+//
+//		  accl_avg[0]=accl_sum[0]/avg_cnt;
+//		  accl_avg[1]=accl_sum[1]/avg_cnt;
+//		  accl_avg[2]=accl_sum[2]/avg_cnt;
+//
+//	  }else{
+//		  Gyro_Read(&os_g);
+//		  accl_Read(&os_a);
+//		 // mag_Read(&os_m);
+//
+//
+//		  gyro_read[0]=os_g.X-gyro_avg[0];
+//		  gyro_read[1]=os_g.Y-gyro_avg[1];
+//		  gyro_read[2]=os_g.Z-gyro_avg[2];
+//		  gyro_pos[0]+=gyro_read[0];
+//		  gyro_pos[1]+=gyro_read[1];
+//		  gyro_pos[2]+=gyro_read[2];
+//
+//		  accl_read[0]=os_a.X-accl_avg[0];
+//		  accl_read[1]=os_a.Y-accl_avg[1];
+//		  accl_read[2]=os_a.Z-accl_avg[2];
+//		  accl_pos[0]+=accl_read[0];
+//		  accl_pos[1]+=accl_read[1];
+//		  accl_pos[2]+=accl_read[2];
+//
+//
+//	  }
 
-		  gyro_sum[0]+=os_g.X;
-		  gyro_sum[1]+=os_g.Y;
-		  gyro_sum[2]+=os_g.Z;
+	  Gyro_Read(&os_g);
+	  accl_Read(&os_a);
+	  dt = ((double)TIM1->CNT)/10000;
+	  TIM1->CNT=0;
 
-		  accl_sum[0]+=os_a.X;
-		  accl_sum[1]+=os_a.Y;
-		  accl_sum[2]+=os_a.Z;
+	  gyroX = (double)os_g.X - gyro_x_cal;
+	  gyroY = (double)os_g.Y - gyro_y_cal;
+	  gyroZ = (double)os_g.Z - gyro_z_cal;
 
-		  ++avg_cnt;
-		  gyro_avg[0]=gyro_sum[0]/avg_cnt;
-		  gyro_avg[1]=gyro_sum[1]/avg_cnt;
-		  gyro_avg[2]=gyro_sum[2]/avg_cnt;
+	  accelX = (double)os_a.X;
+	  accelY = (double)os_a.Y;
+	  accelZ = (double)os_a.Z;
 
-		  accl_avg[0]=accl_sum[0]/avg_cnt;
-		  accl_avg[1]=accl_sum[1]/avg_cnt;
-		  accl_avg[2]=accl_sum[2]/avg_cnt;
+	  rollangle=atan2(accelY,accelZ)*180/M_PI;
+	  pitchangle=atan2(accelX,sqrt(accelY*accelY+accelZ*accelZ))*180/M_PI;
 
-	  }else{
-		  Gyro_Read(&os_g);
-		  accl_Read(&os_a);
-		 // mag_Read(&os_m);
-
-
-		  gyro_read[0]=os_g.X-gyro_avg[0];
-		  gyro_read[1]=os_g.Y-gyro_avg[1];
-		  gyro_read[2]=os_g.Z-gyro_avg[2];
-		  gyro_pos[0]+=gyro_read[0];
-		  gyro_pos[1]+=gyro_read[1];
-		  gyro_pos[2]+=gyro_read[2];
-
-		  accl_read[0]=os_a.X-accl_avg[0];
-		  accl_read[1]=os_a.Y-accl_avg[1];
-		  accl_read[2]=os_a.Z-accl_avg[2];
-		  accl_pos[0]+=accl_read[0];
-		  accl_pos[1]+=accl_read[1];
-		  accl_pos[2]+=accl_read[2];
-
-
-	  }
-
-
+	  roll = 0.99 * (roll+ gyroX * dt) + 0.01 * rollangle;
+	  pitch = 0.99 * (pitch + gyroY * dt) + 0.01 * pitchangle;
+	  yaw=gyroZ;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -192,17 +241,13 @@ void SystemClock_Config(void)
 
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
   RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-  RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 20;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
-  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -211,12 +256,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -368,6 +413,53 @@ static void MX_SPI2_Init(void)
   /* USER CODE BEGIN SPI2_Init 2 */
 
   /* USER CODE END SPI2_Init 2 */
+
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 1599;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 9999;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
 
 }
 
