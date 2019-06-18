@@ -3,8 +3,7 @@
 #include "gen_sinewave.h"
 
 #define RANGE_MAX(R, L, H) R<L ? L : R<H ? R : H
-
-int16_t lookup[2*LOOKUP_MAXSIZE]={0};
+int16_t lookup[2*LOOKUP_MAXSIZE];
 int16_t prepare[2*LOOKUP_MAXSIZE]={0};
 
 void SineWave_init(SineWaveHandler hsin)
@@ -13,26 +12,24 @@ void SineWave_init(SineWaveHandler hsin)
 	hsin->freq = 1000;
 }
 
-void SineWave_generate(SineWaveHandler hsin, RangingData *dataFreq, RangingData *dataAmp)
+void SineWave_generate(SineWaveHandler hsin, float freq, float amp)
 {
-	hsin->freq = RANGE_MAX(dataFreq->range_mm, 40, 400);
-	float32_t temp = dataAmp->range_mm*0.001;
-	hsin->amp = RANGE_MAX(temp, 0.1, 0.4);
-	hsin->amp *=2;
-	hsin->sampleNum = hsin->freq;
-	float32_t step = 2.0*PI/hsin->sampleNum;
-	hsin->sampleNum = 2*hsin->sampleNum;
+	hsin->freq = freq;
+	hsin->amp = amp;
+	//hsin->sampleNum = hsin->freq;
+	float32_t step = 2.0*PI/12000;
+	hsin->sampleNum = 12000;
 	float32_t pos = 0;
 	float32_t sample;
 	for(uint32_t i=0; i<hsin->sampleNum; i+=2)
 	{
-		sample = hsin->amp*((arm_sin_f32(pos))*(INT16_MAX));
+		sample = hsin->amp*((arm_sin_f32(hsin->freq*pos))*(INT16_MAX));
 		prepare[i]= (uint16_t)sample;
 		prepare[i+1] = prepare[i];
 		//sampleShow = lookup[i];
 		pos+=step;
 	}
-	//hsin->data = lookup;
+	hsin->data = prepare;
 }
 
 

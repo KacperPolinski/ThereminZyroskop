@@ -44,7 +44,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gen_sinewave.h"
-
+#include "math.h"
+#include "stdlib.h"
 #include "audio.h"
 #include "cs43l22.h"
 #include "Filtr.h"
@@ -96,8 +97,12 @@ float roll_tmp;
 
 double alpha;
 double lastMeasurment;
+double timestamp;
 double timeElapsed;
+float real_freq=0;
 
+float debug_volume;
+float debug_freq;
 extern I2C_HandleTypeDef I2c1Handle;
 
 
@@ -133,17 +138,12 @@ static void MX_GPIO_Init(void)
 int main(void)
 {
 	HAL_Init();
-	RangingData dataFreq;
-//	RangeStatus statusFreq;
-//	ResultBuffer resultsFreq;
 
-	RangingData dataAmp;
-//	RangeStatus statusAmp;
-//	ResultBuffer resultsAmp;
 	SystemClock_Config();
 	MX_GPIO_Init();
 	DFSDM_Init();
 	Playback_Init();
+	alpha=0.5;
 	Init_MPU();
 
 	if(HAL_OK != HAL_DFSDM_FilterRegularStart_DMA(&DfsdmFilterHandle, RecBuff, 2048))
@@ -152,20 +152,26 @@ int main(void)
 	}
 
 
-	SineWave_generate(hsin, &dataFreq, &dataAmp);
-	audio_drv->Play(AUDIO_I2C_ADDRESS, (uint16_t *) &lookup[0], hsin->sampleNum);
-	HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *) &lookup[0], hsin->sampleNum);
-
+	SineWave_generate(hsin, 100, 1);
+	audio_drv->Play(AUDIO_I2C_ADDRESS, (uint16_t *) hsin->data, hsin->sampleNum);
+	HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *) hsin->data,  hsin->sampleNum);
+	timestamp=HAL_GetTick();
 	while(1)
 	{
+		if(timestamp+20<HAL_GetTick()){
+			Read_MPU_Gyro();
+			Read_MPU_Accl();
+			Exchange();
+			Filter();
+			hsin->amp=debug_volume= fabs(sin(TO_RAD(roll)));
+			real_freq=500.0f+3000.0f*fabs(sin(TO_RAD(pitch)));
+			debug_freq=hsin->freq =real_freq;
+			SineWave_generate(hsin, real_freq, debug_volume);
+			timestamp=HAL_GetTick();
+		}
+//		audio_drv->Play(AUDIO_I2C_ADDRESS, (uint16_t *) hsin->data, hsin->sampleNum);
+//		HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *) hsin->data,  hsin->sampleNum);
 
-		Read_MPU_Gyro();
-		Read_MPU_Accl();
-		Exchange();
-		Filter();
-		hsin->amp = 1;
-		hsin->freq =480;
-		SineWave_generate(hsin, &dataFreq, &dataAmp);
 	}
 }
 
