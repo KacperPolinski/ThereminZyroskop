@@ -121,19 +121,6 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
-
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(XSHUT_GPIO_Port, XSHUT_Pin, GPIO_PIN_RESET);
-
-
-  /*Configure GPIO pin : XSHUT_Pin */
-  GPIO_InitStruct.Pin = XSHUT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(XSHUT_GPIO_Port, &GPIO_InitStruct);
-
 }
 int main(void)
 {
@@ -169,9 +156,6 @@ int main(void)
 			SineWave_generate(hsin, real_freq, debug_volume);
 			timestamp=HAL_GetTick();
 		}
-//		audio_drv->Play(AUDIO_I2C_ADDRESS, (uint16_t *) hsin->data, hsin->sampleNum);
-//		HAL_SAI_Transmit_DMA(&SaiHandle, (uint8_t *) hsin->data,  hsin->sampleNum);
-
 	}
 }
 

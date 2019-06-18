@@ -51,17 +51,15 @@ void Filter(){
 
 	laccRoll = accRoll;
 	laccPitch = accPitch;
-	//laccYaw = accYaw;
+	
 	accRoll = (1-alpha) * TO_DEG(atan2(acceleration_g[0],sqrt(acceleration_g[0] * acceleration_g[0] + acceleration_g[1] * acceleration_g[1] + acceleration_g[2] * acceleration_g[2]))) + alpha * laccRoll;
 	accPitch = (1-alpha) * TO_DEG(atan2(acceleration_g[1],sqrt(acceleration_g[0] * acceleration_g[0] + acceleration_g[1] * acceleration_g[1] + acceleration_g[2] * acceleration_g[2]))) + alpha * laccPitch;
-	//accYaw = (1-alpha) * TO_DEG(atan2(acceleration_g[2],sqrt(acceleration_g[0] * acceleration_g[0] + acceleration_g[1] * acceleration_g[1] + acceleration_g[2] * acceleration_g[2]))) + alpha * laccYaw;
 
 	lgyroRoll = gyroRoll;
 	lgyroPitch = gyroPitch;
-	//lgyroYaw = gyroYaw;
+	
 	gyroRoll = (1-alpha) * lgyroRoll + (1-alpha)*(angular_rate_dps[0]-langular_rate_dps[0]);
 	gyroPitch =(1-alpha) * lgyroPitch + (1-alpha)*(angular_rate_dps[1]-langular_rate_dps[1]);
-	//gyroPitch =(1-alpha) * lgyroYaw + (1-alpha)*(angular_rate_dps[2]-langular_rate_dps[2]);
 
 
 	timeElapsed = HAL_GetTick() - lastMeasurment;
@@ -69,7 +67,6 @@ void Filter(){
 
 	roll_tmp = ((1 - alpha) * (roll_tmp + gyroRoll * timeElapsed / 1000.0) + alpha * accRoll);
 	pitch_tmp = ((1 - alpha) * (pitch_tmp + gyroPitch * timeElapsed / 1000.0) + alpha * accPitch);
-	//yaw = ((1 - alpha) * (yaw + gyroYaw * timeElapsed / 1000.0) + alpha * accYaw);
 
 	roll = roll_tmp;
 	pitch = pitch_tmp;

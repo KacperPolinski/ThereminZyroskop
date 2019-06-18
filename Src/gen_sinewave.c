@@ -16,7 +16,6 @@ void SineWave_generate(SineWaveHandler hsin, float freq, float amp)
 {
 	hsin->freq = freq;
 	hsin->amp = amp;
-	//hsin->sampleNum = hsin->freq;
 	float32_t step = 2.0*PI/12000;
 	hsin->sampleNum = 12000;
 	float32_t pos = 0;
@@ -26,7 +25,6 @@ void SineWave_generate(SineWaveHandler hsin, float freq, float amp)
 		sample = hsin->amp*((arm_sin_f32(hsin->freq*pos))*(INT16_MAX));
 		prepare[i]= (uint16_t)sample;
 		prepare[i+1] = prepare[i];
-		//sampleShow = lookup[i];
 		pos+=step;
 	}
 	hsin->data = prepare;
