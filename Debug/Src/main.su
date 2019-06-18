@@ -1,0 +1,12 @@
+main.c:113:13:MX_GPIO_Init	32	static
+main.c:133:5:main	32	static
+main.c:191:6:SystemClock_Config	232	static
+main.c:234:13:DFSDM_Init	8	static
+main.c:288:13:Playback_Init	16	static
+main.c:349:6:Error_Handler	8	static
+main.c:365:6:HAL_DFSDM_ChannelMspInit	184	static
+main.c:410:6:HAL_DFSDM_FilterMspInit	24	static
+main.c:438:6:HAL_SAI_MspInit	48	static
+main.c:479:6:HAL_DFSDM_FilterRegConvHalfCpltCallback	16	static
+main.c:491:6:HAL_DFSDM_FilterRegConvCpltCallback	16	static
+main.c:496:6:HAL_SAI_TxCpltCallback	16	static

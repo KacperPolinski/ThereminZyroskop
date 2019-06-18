@@ -1,7 +1,7 @@
 #ifndef DCM_H
 #define DCM_H
 #include <stdbool.h>
-#include "stm32f4xx.h"
+#include "stm32l4xx.h"
 
 #define MAG_Write 0x3C
 #define MAG_Read 0x3D
@@ -31,8 +31,6 @@
 #define ACCEL_Y_SCALE (GRAVITY / (ACCEL_Y_MAX - ACCEL_Y_OFFSET))
 #define ACCEL_Z_SCALE (GRAVITY / (ACCEL_Z_MAX - ACCEL_Z_OFFSET))
 
-// Gain for gyroscope (ITG-3200)
-#define GYRO_GAIN 0.06957 // Same gain on all axes
 
 #define TO_RAD(x) (x * 0.01745329252)  // *pi/180
 #define TO_DEG(x) (x * 57.2957795131)  // *180/pi
@@ -54,23 +52,23 @@ extern double alpha;
 extern double lastMeasurment;
 extern double timeElapsed;
 
-	double accRoll ;
-	double accPitch;
+double accRoll ;
+double accPitch;
 
-	double gyroRoll ;
-	double gyroPitch;
+double gyroRoll ;
+double gyroPitch;
 
-	double laccRoll ;
-	double laccPitch;
+double laccRoll ;
+double laccPitch;
 
-	double lgyroRoll ;
-	double lgyroPitch;
+double lgyroRoll ;
+double lgyroPitch;
 
-	double accYaw ;
-	double gyroYaw;
+double accYaw ;
+double gyroYaw;
 
-	double laccYaw ;
-	double lgyroYaw;
+double laccYaw ;
+double lgyroYaw;
 
 void Init_MPU();
 void Read_MPU_Gyro();

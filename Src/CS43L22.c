@@ -1,9 +1,3 @@
-/*
- * CS43L22.C
- *
- *  Created on: May 20, 2019
- *      Author: bum
- */
 
 #include <CS43L22.h>
 

@@ -47,6 +47,7 @@
 
 #include "audio.h"
 #include "cs43l22.h"
+#include "Filtr.h"
 //#include "stm32l476g_discovery_audio.h"
 /* USER CODE END Includes */
 
@@ -80,6 +81,23 @@ uint32_t                     DmaRecBuffCplt      = 0;
 uint32_t                     PlaybackStarted         = 0;
 
 
+float accel[3];  // Actually stores the NEGATED acceleration (equals gravity, if board not moving).
+float gyro[3];
+float acceleration_g[3];
+float angular_rate_dps[3];
+float lacceleration_g[3];
+float langular_rate_dps[3];
+
+float pitch;
+float roll;
+float yaw;
+float pitch_tmp;
+float roll_tmp;
+
+double alpha;
+double lastMeasurment;
+double timeElapsed;
+
 extern I2C_HandleTypeDef I2c1Handle;
 
 
@@ -91,7 +109,6 @@ SineWaveHandler hsin = &sine;
 void SystemClock_Config(void);
 static void DFSDM_Init(void);
 static void Playback_Init(void);
-
 /* Private functions ---------------------------------------------------------*/
 static void MX_GPIO_Init(void)
 {
@@ -113,34 +130,22 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(XSHUT_GPIO_Port, &GPIO_InitStruct);
 
 }
-
 int main(void)
 {
+	HAL_Init();
 	RangingData dataFreq;
-	RangeStatus statusFreq;
-	ResultBuffer resultsFreq;
+//	RangeStatus statusFreq;
+//	ResultBuffer resultsFreq;
 
 	RangingData dataAmp;
-	RangeStatus statusAmp;
-	ResultBuffer resultsAmp;
-
-
-	devFreq->I2cHandle=&I2c1Handle;
-	devAmp->I2cHandle=&I2c1Handle;
-
-	HAL_Init();
-
-	/* Configure the system clock to have a frequency of 80 MHz */
+//	RangeStatus statusAmp;
+//	ResultBuffer resultsAmp;
 	SystemClock_Config();
 	MX_GPIO_Init();
-
-	/* Initialize DFSDM channels and filter for record */
 	DFSDM_Init();
-
-	/* Initialize playback */
 	Playback_Init();
+	Init_MPU();
 
-	/* Start DFSDM conversions */
 	if(HAL_OK != HAL_DFSDM_FilterRegularStart_DMA(&DfsdmFilterHandle, RecBuff, 2048))
 	{
 		Error_Handler();
@@ -153,6 +158,11 @@ int main(void)
 
 	while(1)
 	{
+
+		Read_MPU_Gyro();
+		Read_MPU_Accl();
+		Exchange();
+		Filter();
 		hsin->amp = 1;
 		hsin->freq =480;
 		SineWave_generate(hsin, &dataFreq, &dataAmp);
@@ -182,6 +192,7 @@ void SystemClock_Config(void)
 {
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 	/* MSI is enabled after System reset, activate PLL with MSI as source */
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;

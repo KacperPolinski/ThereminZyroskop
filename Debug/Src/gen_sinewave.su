@@ -1,0 +1,2 @@
+gen_sinewave.c:10:6:SineWave_init	16	static
+gen_sinewave.c:16:6:SineWave_generate	64	static

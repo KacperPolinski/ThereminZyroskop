@@ -40,6 +40,40 @@ typedef struct
 	uint32_t sampleNum;
 }SineWave;
 
+typedef enum
+{
+	RangeValid 					= 	0,
+	SigmaFail 					= 	1,
+	SignalFail 					= 	2,
+	RangeValidMinRangeClipped	= 	3,
+	OutOfBoundsFail 			= 	4,
+    HardwareFail              	=   5,
+    RangeValidNoWrapCheckFail 	=   6,
+    WrapTargetFail            	=   7,
+	ProcessingFail            	=   8,
+    XtalkSignalFail           	=   9,
+    SynchronizationInt          =  10,
+    MinRangeFail              	=  13,
+    None                      	= 255,
+} RangeStatus;
+typedef struct
+{
+  uint16_t range_mm;
+  RangeStatus range_status;
+  float peak_signal_count_rate_MCPS;
+  float ambient_count_rate_MCPS;
+} RangingData;
+
+typedef struct
+{
+    uint8_t range_status;
+    uint16_t dss_actual_effective_spads_sd0;
+    uint16_t ambient_count_rate_mcps_sd0;
+    uint16_t final_crosstalk_corrected_range_mm_sd0;
+    uint16_t peak_signal_count_rate_crosstalk_corrected_mcps_sd0;
+} ResultBuffer;
+
+
 typedef SineWave *SineWaveHandler;
 
 //SineWave sin;
