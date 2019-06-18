@@ -10,7 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include startup/subdir.mk
 -include Src/subdir.mk
--include Drivers/STM32L4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -28,13 +28,13 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: th.elf
+all: Theremin_V2.elf
 
 # Tool invocations
-th.elf: $(OBJS) $(USER_OBJS) ../STM32L476VGTx_FLASH.ld
+Theremin_V2.elf: $(OBJS) $(USER_OBJS) ../STM32F411VETx_FLASH.ld
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU GCC Linker'
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs -specs=nano.specs -T"../STM32L476VGTx_FLASH.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "th.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs -specs=nano.specs -u _printf_float -T"../STM32F411VETx_FLASH.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "Theremin_V2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
@@ -46,8 +46,8 @@ clean:
 
 post-build:
 	-@echo 'Generating hex and Printing size information:'
-	arm-none-eabi-objcopy -O ihex "th.elf" "th.hex"
-	arm-none-eabi-size "th.elf"
+	arm-none-eabi-objcopy -O ihex "Theremin_V2.elf" "Theremin_V2.hex"
+	arm-none-eabi-size "Theremin_V2.elf"
 	-@echo ' '
 
 .PHONY: all clean dependents
